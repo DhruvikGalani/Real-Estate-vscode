@@ -38,24 +38,24 @@ export default function Header() {
             </li>
           </Link>
           <Link to={"/about"}>
-          <li
-            className="hidden sm:inline text-slate-800 relative cursor-pointer 
+            <li
+              className="hidden sm:inline text-slate-800 relative cursor-pointer 
     after:absolute after:left-0 after:bottom-0 
     after:w-[100%] after:h-[2.5px] after:bg-slate-500 after:transition-transform 
     after:origin-center after:scale-x-0  hover:after:opacity-100 hover:after:scale-x-100 after:rounded-full"
-          >
-            About
-          </li>
+            >
+              About
+            </li>
           </Link>
           <Link to={"/signin"}>
-          <li
-            className=" text-slate-800 relative cursor-pointer 
+            <li
+              className=" text-slate-800 relative cursor-pointer 
     after:absolute after:left-0 after:bottom-0 
     after:w-[100%] after:h-[2.5px] after:bg-slate-500 after:transition-transform 
     after:origin-center after:scale-x-0  hover:after:opacity-100 hover:after:scale-x-100 after:rounded-full"
-          >
-            Sign in
-          </li>
+            >
+              Sign in
+            </li>
           </Link>
         </ul>
       </div>
