@@ -6,6 +6,7 @@ import {
   signInSuccess,
   signInFailure,
 } from "../redux/user/userSlice";
+import OAuth from "../components/OAuth";
 
 export default function SignIn() {
   const [formData, setFormData] = useState({});
@@ -73,10 +74,12 @@ export default function SignIn() {
 
           <button
             disabled={loading}
-            className="w-full py-3 mt-4 text-lg sm:text-xl font-semibold text-white bg-slate-700 rounded-full shadow-[1px_1px_3px_#1e293b,2px_2px_5px_#374151] transition duration-300 hover:bg-slate-800 hover:shadow-[1px_1px_3px_#374151,-1px_-1px_3px_#1e293b] active:bg-slate-900 active:shadow-[inset_1px_1px_4px_#64748B,inset_-2px_-2px_4px_#E2E8F0]"
-          >
-            {loading ? "Loading.." : "Sign In "}
+            className="w-full py-3 mt-4 text-lg sm:text-xl font-semibold text-white bg-slate-700 rounded-full shadow-[1px_1px_3px_#1e293b,2px_2px_5px_#334155] transition duration-300 hover:bg-slate-800 hover:shadow-[1px_1px_3px_#334155,-1px_-1px_3px_#1e293b] active:bg-slate-900 active:shadow-[inset_1px_1px_4px_#475569,inset_-2px_-2px_4px_#CBD5E1]"
+            >
+            {/* {loading ? "Loading.." : "Sign In "} */}
+            Sign In
           </button>
+          <OAuth/>
         </form>
         <p className="mt-4 text-slate-600 text-sm"> </p>
         Don't have an account?

@@ -27,7 +27,7 @@ app.listen(PORT, () => {
 
 app.use('/api/user',userRouter);
 app.use('/api/auth',authRouter);
-
+  
 //custom error handel
 app.use((err, req, res, next) => {
   const statuscode = err.statuscode || 500;
