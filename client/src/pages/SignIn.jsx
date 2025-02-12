@@ -9,12 +9,14 @@ import {
 import OAuth from "../components/OAuth";
 
 export default function SignIn() {
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [signInError, setSignInError] = useState(null); // ✅ Separate error for sign-in
+  const [googleError, setGoogleError] = useState(null); // ✅ Separate error for Google Sign-In
   const { loading, error } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  //set josn & values
+  // ✅ Handle Input Change
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -22,9 +24,18 @@ export default function SignIn() {
     });
   };
 
-  // submit data to signup
+  // ✅ Handle Sign-In Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSignInError(null); // ✅ Reset sign-in errors when submitting
+    setGoogleError(null); // ✅ Reset Google errors when switching to sign-in
+
+    // ✅ Validate Email & Password
+    if (!formData.email.trim() || !formData.password.trim()) {
+      setSignInError("Email and password are required.");
+      return;
+    }
+
     try {
       dispatch(signInStart());
       const res = await fetch("/api/auth/signin", {
@@ -34,18 +45,22 @@ export default function SignIn() {
         },
         body: JSON.stringify(formData),
       });
+
       const data = await res.json();
       console.log(data);
-      // check success status
-      if (data.success == false) {
-        //give custom error
+
+      // ✅ Handle failed login
+      if (data.success === false) {
         dispatch(signInFailure(data.message));
+        setSignInError(data.message); // ✅ Show only for sign-in
         return;
       }
+
       dispatch(signInSuccess(data));
       navigate("/");
     } catch (error) {
       dispatch(signInFailure(error.message));
+      setSignInError(error.message);
     }
   };
 
@@ -75,22 +90,26 @@ export default function SignIn() {
           <button
             disabled={loading}
             className="w-full py-3 mt-4 text-lg sm:text-xl font-semibold text-white bg-slate-700 rounded-full shadow-[1px_1px_3px_#1e293b,2px_2px_5px_#334155] transition duration-300 hover:bg-slate-800 hover:shadow-[1px_1px_3px_#334155,-1px_-1px_3px_#1e293b] active:bg-slate-900 active:shadow-[inset_1px_1px_4px_#475569,inset_-2px_-2px_4px_#CBD5E1]"
-            >
-            {/* {loading ? "Loading.." : "Sign In "} */}
-            Sign In
+          >
+            {loading ? "Loading.." : "Sign In"}
           </button>
-          <OAuth/>
         </form>
-        <p className="mt-4 text-slate-600 text-sm"> </p>
-        Don't have an account?
-        <Link
-          to={"/signup"}
-          className="text-blue-800 font-semibold hover:underline ml-1"
-        >
-          Sign up
-        </Link>
-        {/* for print error */}
-        {error && <p className="text-red-600 mt-3 text-sm">{error}</p>}
+
+        {/* ✅ Pass setSignInError & setGoogleError to OAuth */}
+        <OAuth setError={setSignInError} />
+
+        <p className="mt-4 text-slate-600 text-sm">
+          Don't have an account?
+          <Link to={"/signup"} className="text-blue-800 font-semibold hover:underline ml-1">
+            Sign up
+          </Link>
+        </p>
+
+        {/* ✅ Show sign-in error only */}
+        {signInError && <p className="text-red-600 mt-3 text-sm">{signInError}</p>}
+
+        {/* ✅ Show Google sign-in error only */}
+        {googleError && <p className="text-red-600 mt-3 text-sm">{googleError}</p>}
       </div>
     </div>
   );
