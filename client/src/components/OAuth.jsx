@@ -1,4 +1,3 @@
-
 // import React from "react";
 // import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 // import { app } from "../firebase";
@@ -12,7 +11,7 @@
 //       const auth = getAuth(app);
 //       const result = await signInWithPopup(auth, provider);
 //       console.log(result);
-      
+
 //     } catch (error) {
 //       console.log("Could not sign in with Google!", error);
 
@@ -35,13 +34,15 @@
 //   );
 // }
 
-
 import React from "react";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useNavigate } from "react-router-dom"; // ✅ Import navigation hook
 import { app } from "../firebase";
+import { useDispatch } from "react-redux";
+import { signInSuccess } from "../redux/user/userSlice";
 
 export default function OAuth({ setError }) {
+  const dispatch = useDispatch();
   const navigate = useNavigate(); // ✅ Initialize navigate
 
   const handleGoogleClick = async () => {
@@ -51,8 +52,22 @@ export default function OAuth({ setError }) {
       const provider = new GoogleAuthProvider();
       const auth = getAuth(app);
       const result = await signInWithPopup(auth, provider);
-      
+
       console.log("Google Sign-In Successful:", result);
+
+      const res = await fetch("/api/auth/google", {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: result.user.displayName,
+          email: result.user.email,
+          photo: result.user.photoURL,
+        }),
+      });
+      const data = await res.json()
+      dispatch(signInSuccess(data));
 
       // ✅ Extract user info if needed
       const user = result.user;
@@ -60,7 +75,6 @@ export default function OAuth({ setError }) {
 
       // ✅ Redirect after successful login
       navigate("/"); // Change "/" to any route where you want to redirect the user
-
     } catch (error) {
       console.log("Could not sign in with Google!", error);
 
