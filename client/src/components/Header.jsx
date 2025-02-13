@@ -1,4 +1,3 @@
-
 import React from "react";
 import { FaSearch } from "react-icons/fa";
 import { Link } from "react-router-dom";
@@ -56,24 +55,20 @@ export default function Header() {
             </Link>
           </li>
           <li>
-    
             {/* <Link to={currentUser ? "/profile" : "/signin"}> */}
             <Link to={"/profile"}>
               {currentUser ? (
                 <img
                   src={currentUser.avatar}
-
-                  
                   alt="profile"
                   className="w-[35px] h-[35px] rounded-full object-cover border border-gray-300"
                 />
-                
               ) : (
                 <span
                   className="text-slate-800 relative cursor-pointer 
-                after:absolute after:left-0 after:bottom-0 
-                after:w-[100%] after:h-[2.5px] after:bg-slate-500 after:transition-transform 
-                after:origin-center after:scale-x-0 hover:after:opacity-100 hover:after:scale-x-100 after:rounded-full"
+            after:absolute after:left-0 after:bottom-0 
+            after:w-[100%] after:h-[2.5px] after:bg-slate-500 after:transition-transform 
+            after:origin-center after:scale-x-0 hover:after:opacity-100 hover:after:scale-x-100 after:rounded-full"
                 >
                   Sign in
                 </span>

@@ -6,3 +6,8 @@ body
 {
     background-color: rgb(241, 245, 241);
 }
+
+/* for error of headr click on sign in */
+html {
+  overflow-y: scroll; /* Always shows scrollbar to prevent shifting */
+}
