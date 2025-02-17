@@ -1,15 +1,18 @@
 import React, { useState, useRef } from "react";
-import { useSelector, } from "react-redux";
+import { useSelector } from "react-redux";
 import {
   updateUserStart,
   updateUserFailure,
   updateUserSuccess,
+  deleteUserFailure,
+  deleteUserStart,
+  deleteUserSuccess,
 } from "../redux/user/userSlice";
 import { useDispatch } from "react-redux";
 
 export default function Profile() {
   const fileRef = useRef(null);
-  const { currentUser } = useSelector((state) => state.user);
+  const { currentUser, loading, error } = useSelector((state) => state.user);
 
   // ✅ State for selected file, image preview, validation, progress, and success message
   const [selectedImage, setSelectedImage] = useState(
@@ -20,8 +23,8 @@ export default function Profile() {
   const [uploadSuccess, setUploadSuccess] = useState(false); // ✅ Success message state
   const [formData, setForData] = useState({});
   const dispatch = useDispatch();
-  console.log("currentUser._id : ",currentUser._id);
-  // console.log(formData);
+  const [updateSuccess, setUpdateSuccess] = useState(false);
+  console.log("currentUser._id : ", currentUser._id);
 
   // ✅ Update image preview when a file is selected
   const handleFileChange = (e) => {
@@ -66,22 +69,41 @@ export default function Profile() {
 
       dispatch(updateUserStart());
       const res = await fetch(`/api/user/update/${currentUser._id}`, {
-        method:'POST',
-        headers:{
-          'Content-Type' : 'application/json',
-        },body: JSON.stringify(formData),
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
       });
       const data = await res.json();
-      if(data.success === false)
-        {
-          dispatch(updateUserFailure(data.message));
-          return;
-        }
-        dispatch(updateUserSuccess(data));
+      if (data.success === false) {
+        dispatch(updateUserFailure(data.message));
+        return;
+      }
+      dispatch(updateUserSuccess(data));
+      setUpdateSuccess(true);
     } catch (error) {
       dispatch(updateUserFailure(error.message));
     }
   };
+  const handleDeleteUser = async () => {
+    try {
+      dispatch(deleteUserStart());
+      const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+        method:'DELETE',
+      });
+      const data= await res.json();
+      if(data.success === false)
+        {
+            dispatch(deleteUserFailure(error.message));
+            return;
+        }
+        dispatch(deleteUserSuccess(data));
+    } catch (error) {
+      dispatch(deleteUserFailure(error.message));
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4 sm:px-0 bg-[rgb(241, 245, 241)] text-center">
       <div className="w-full max-w-[400px] sm:max-w-[400px] p-8 sm:p-10 bg-slate-200 rounded-[25px] border-[3px] border-slate-300">
@@ -100,7 +122,7 @@ export default function Profile() {
 
           {/* ✅ Clickable Profile Image */}
           <img
-            onClick={() => fileRef.current.click()}
+            // onClick={() => fileRef.current.click()}
             src={formData.avatar || selectedImage}
             // src={formData.avatar || selectedImage}
             alt="profile"
@@ -150,20 +172,30 @@ export default function Profile() {
           />
 
           {/* ✅ Update Button */}
-          <button className="w-full py-3 mt-4 text-lg sm:text-xl font-semibold text-white bg-slate-700 rounded-full shadow-[1px_1px_3px_#1e293b,2px_2px_5px_#334155] transition duration-300 hover:bg-slate-800 hover:shadow-[1px_1px_3px_#334155,-1px_-1px_3px_#1e293b] active:bg-slate-900 active:shadow-[inset_1px_1px_4px_#475569,inset_-2px_-2px_4px_#CBD5E1]">
-            Update
+          <button
+            disabled={loading}
+            className="w-full py-3 mt-4 text-lg sm:text-xl font-semibold text-white bg-slate-700 rounded-full shadow-[1px_1px_3px_#1e293b,2px_2px_5px_#334155] transition duration-300 hover:bg-slate-800 hover:shadow-[1px_1px_3px_#334155,-1px_-1px_3px_#1e293b] active:bg-slate-900 active:shadow-[inset_1px_1px_4px_#475569,inset_-2px_-2px_4px_#CBD5E1]"
+          >
+            {loading ? "loading.." : "update"}
           </button>
         </form>
 
         {/* Delete & Sign Out */}
         <div className="flex justify-between mt-5">
-          <span className="text-red-700 font-semibold cursor-pointer hover:underline">
+          <span
+            onClick={handleDeleteUser}
+            className="text-red-700 font-semibold cursor-pointer hover:underline"
+          >
             Delete Account
           </span>
           <span className="text-slate-800 font-semibold cursor-pointer hover:underline">
             Sign Out
           </span>
         </div>
+        <p className="text-red-700 font-semibold mt-5">{error ? error : ""}</p>
+        <p className="text-green-700 font-semibold mt-5">
+          {updateSuccess ? "User is Updates Successfully !" : ""}
+        </p>
       </div>
     </div>
   );
