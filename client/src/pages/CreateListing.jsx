@@ -1,8 +1,79 @@
-import React from "react";
+
+import React, { useState } from "react";
 
 export default function CreateListing() {
+  const [files, setFiles] = useState([]);
+  const [formData, setFormData] = useState({
+    imageUrls: [],
+  });
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isUploadDisabled, setIsUploadDisabled] = useState(false);
+
+  console.log("Uploaded Image URLs:", formData.imageUrls);
+
+  const handleImage = async () => {
+    if (files.length > 6) {
+      setErrorMessage("You can upload a maximum of 6 images.");
+      return;
+    }
+    setErrorMessage("");
+    setIsUploadDisabled(true);
+
+    if (files.length > 0 && files.length < 7) {
+      setIsUploading(true);
+      setUploadProgress(0);
+
+      let completedUploads = 0;
+      const totalFiles = files.length;
+
+      const promises = Array.from(files).map(async (file) => {
+        const url = await uploadToImgBB(file);
+        if (url) {
+          completedUploads++;
+          setUploadProgress(Math.round((completedUploads / totalFiles) * 100));
+          return url;
+        }
+        return null;
+      });
+
+      const urls = (await Promise.all(promises)).filter((url) => url !== null);
+      setFormData({
+        imageUrls: urls,
+      });
+
+      setFiles([]);
+      setIsUploading(false);
+    }
+  };
+
+  const removeImage = (index) => {
+    setFormData((prevState) => ({
+      imageUrls: prevState.imageUrls.filter((_, i) => i !== index),
+    }));
+  };
+
+  const uploadToImgBB = async (file) => {
+    const API_KEY = "6612afba75c17c547e1cf1bd2d1caad4";
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${API_KEY}`, {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      return data.data.url;
+    } catch (error) {
+      console.error("Upload error:", error);
+      return null;
+    }
+  };
+
   return (
-    <main className="p-3 max-w-4xl mx-auto pt-6">
+    <main className="p-3 max-w-4xl mx-auto pt-[100px]">
       <h1 className="text-3xl font-semibold text-center my-7">
         Create a Listing
       </h1>
@@ -55,7 +126,6 @@ export default function CreateListing() {
               <span>Offer</span>
             </div>
           </div>
-
           <div className="grid grid-cols-2 gap-4">
             <div className="flex items-center gap-2">
               <input
@@ -106,6 +176,7 @@ export default function CreateListing() {
               </div>
             </div>
           </div>
+
         </div>
         <div className="flex flex-col flex-1 space-y-4">
           <p className="font-semibold">
@@ -116,6 +187,10 @@ export default function CreateListing() {
           </p>
           <div className="flex gap-4">
             <input
+              onChange={(e) => {
+                setFiles(e.target.files);
+                setIsUploadDisabled(false);
+              }}
               className="p-3 border border-gray-300 rounded w-full"
               type="file"
               id="images"
@@ -123,19 +198,54 @@ export default function CreateListing() {
               multiple
             />
             <button
+              type="button"
+              onClick={handleImage}
               className="p-3 text-green-700 border border-green-700 rounded-xl uppercase 
 hover:shadow-xl hover:text-white hover:bg-green-800 
 transition-all duration-300 ease-in-out 
 disabled:opacity-80 disabled:cursor-not-allowed"
+              disabled={isUploadDisabled}
             >
               Upload
             </button>
           </div>
 
-          <button className="w-full py-2.5 mt-3 text-sm sm:text-base font-semibold text-white bg-slate-700 rounded-xl shadow-[1px_1px_2px_#1e293b,2px_2px_4px_#334155] transition duration-300 hover:bg-slate-800 active:bg-slate-900">
+          {errorMessage && (
+            <div className="text-red-600 text-xs text-center">{errorMessage}</div>
+          )}
+
+          {isUploading && (
+            <div className="bg-transparent text-xs leading-none py-1 text-center text-green-700">
+              Uploading {uploadProgress.toFixed(0)}% ...
+            </div>
+          )}
+
+          {!isUploading && formData.imageUrls.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {formData.imageUrls.map((image, index) => (
+                <div key={index} className="relative">
+                  <button
+                    onClick={() => removeImage(index)}
+                    className="absolute top-1 right-1 bg-red-600 text-white p-1 pb-[8px] rounded-full leading-[8px]"
+                  >
+                    x
+                  </button>
+                  <a href={image} target="_blank" rel="noopener noreferrer">
+                    <img
+                      src={image}
+                      alt={`Uploaded ${index + 1}`}
+                      className="w-20 h-20 object-cover rounded-lg border"
+                    />
+                  </a>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <button className="w-full py-2.5 mt-3 text-sm sm:text-base font-semibold text-white bg-slate-700 rounded-xl shadow-md transition duration-300 hover:bg-slate-800 active:bg-slate-900">
             Create Listing
           </button>
-        </div>{" "}
+        </div>
       </form>
     </main>
   );
