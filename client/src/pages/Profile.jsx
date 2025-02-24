@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useSelector } from "react-redux";
+import { Link } from 'react-router-dom';
 import {
   updateUserStart,
   updateUserFailure,
@@ -121,54 +122,43 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 sm:px-0 bg-[rgb(241, 245, 241)] text-center">
-      <div className="w-full max-w-[400px] sm:max-w-[400px] p-8 sm:p-10 bg-slate-200 rounded-[25px] border-[3px] border-slate-300">
-        <h1 className="text-[24px] sm:text-[28px] font-semibold text-slate-700 mb-6">
+    <div className="min-h-screen flex items-center justify-center px-4 sm:px-0 bg-[rgb(241,245,241)] text-center lg:pt-[100px]
+">
+      <div className="w-full max-w-[320px] sm:max-w-[350px] p-6 sm:p-8 bg-slate-200 rounded-[20px] border-[2px] border-slate-300">
+        <h1 className="text-[20px] sm:text-[24px] font-semibold text-slate-700 mb-4">
           Profile
         </h1>
-        <form onSubmit={handleSubmmit} className="flex flex-col gap-4">
-          {/* ✅ Hidden File Input */}
+        <form onSubmit={handleSubmmit} className="flex flex-col gap-3">
+          {/* Hidden File Input */}
           <input
             type="file"
             ref={fileRef}
             hidden
             accept="image/*"
-            onChange={handleFileChange} // ✅ Corrected event handler
+            onChange={handleFileChange}
           />
-
-          {/* ✅ Clickable Profile Image */}
+  
+          {/* Profile Image */}
           <img
-            // onClick={() => fileRef.current.click()}
             src={formData.avatar || selectedImage}
-            // src={formData.avatar || selectedImage}
             alt="profile"
-            className="rounded-full h-24 w-24 object-cover cursor-pointer self-center border border-gray-300 shadow-md"
+            className="rounded-full h-20 w-20 object-cover cursor-pointer self-center border border-gray-300 shadow-md"
           />
-
-          {/* ✅ Uploading Progress Text */}
+  
+          {/* Uploading Progress */}
           {uploadProgress > 0 && uploadProgress < 100 && (
-            <p className="text-black text-sm mt-1">
-              Uploading: {uploadProgress}%
-            </p>
+            <p className="text-black text-xs mt-1">Uploading: {uploadProgress}%</p>
           )}
-
-          {/* ✅ Show error message if image is not uploaded */}
-          {imageError && <p className="text-red-600 text-sm">{imageError}</p>}
-
-          {/* ✅ Show success message when upload completes */}
-          {uploadSuccess && (
-            <p className="text-green-600 text-sm mt-1">
-              Image uploaded successfully!
-            </p>
-          )}
-
+          {imageError && <p className="text-red-600 text-xs">{imageError}</p>}
+          {uploadSuccess && <p className="text-green-600 text-xs">Image uploaded successfully!</p>}
+  
           {/* Input Fields */}
           <input
             type="text"
             defaultValue={currentUser.username}
             placeholder="Username"
             id="username"
-            className="w-full px-5 py-3 text-base sm:text-lg bg-slate-200 text-slate-700 rounded-full shadow-[inset_1px_1px_3px_#a0a0a0,inset_-2px_-2px_5px_#ffffff] border-none focus:outline-none focus:ring-2 focus:ring-slate-500"
+            className="w-full px-4 py-2 text-sm sm:text-base bg-slate-200 text-slate-700 rounded-full shadow-[inset_1px_1px_2px_#a0a0a0,inset_-2px_-2px_4px_#ffffff] border-none focus:outline-none focus:ring-1 focus:ring-slate-500"
             onChange={handleChange}
           />
           <input
@@ -176,46 +166,153 @@ export default function Profile() {
             defaultValue={currentUser.email}
             placeholder="Email"
             id="email"
-            className="w-full px-5 py-3 text-base sm:text-lg bg-slate-200 text-slate-700 rounded-full shadow-[inset_1px_1px_3px_#a0a0a0,inset_-2px_-2px_5px_#ffffff] border-none focus:outline-none focus:ring-2 focus:ring-slate-500"
+            className="w-full px-4 py-2 text-sm sm:text-base bg-slate-200 text-slate-700 rounded-full shadow-[inset_1px_1px_2px_#a0a0a0,inset_-2px_-2px_4px_#ffffff] border-none focus:outline-none focus:ring-1 focus:ring-slate-500"
             onChange={handleChange}
           />
           <input
             type="password"
             placeholder="Password"
             id="password"
-            className="w-full px-5 py-3 text-base sm:text-lg bg-slate-200 text-slate-700 rounded-full shadow-[inset_1px_1px_3px_#a0a0a0,inset_-2px_-2px_5px_#ffffff] border-none focus:outline-none focus:ring-2 focus:ring-slate-500"
+            className="w-full px-4 py-2 text-sm sm:text-base bg-slate-200 text-slate-700 rounded-full shadow-[inset_1px_1px_2px_#a0a0a0,inset_-2px_-2px_4px_#ffffff] border-none focus:outline-none focus:ring-1 focus:ring-slate-500"
             onChange={handleChange}
           />
-
-          {/* ✅ Update Button */}
+  
+          {/* Update Button */}
           <button
             disabled={loading}
-            className="w-full py-3 mt-4 text-lg sm:text-xl font-semibold text-white bg-slate-700 rounded-full shadow-[1px_1px_3px_#1e293b,2px_2px_5px_#334155] transition duration-300 hover:bg-slate-800 hover:shadow-[1px_1px_3px_#334155,-1px_-1px_3px_#1e293b] active:bg-slate-900 active:shadow-[inset_1px_1px_4px_#475569,inset_-2px_-2px_4px_#CBD5E1]"
+            className="w-full mt-3 py-2 text-sm sm:text-base font-semibold text-white bg-slate-700 rounded-full shadow-[1px_1px_2px_#1e293b,2px_2px_4px_#334155] transition duration-300 hover:bg-slate-800 active:bg-slate-900"
           >
-            {loading ? "loading.." : "update"}
+            {loading ? "Loading.." : "Update"}
           </button>
-        </form>
-
-        {/* Delete & Sign Out */}
-        <div className="flex justify-between mt-5">
-          <span
-            onClick={handleDeleteUser}
-            className="text-red-700 font-semibold cursor-pointer hover:underline"
+  
+          {/* Create Listing Button */}
+          <Link
+            className="w-full py-2 text-sm sm:text-base font-semibold text-white bg-green-700 rounded-full shadow-[1px_1px_2px_#166534,2px_2px_4px_#14532d] transition duration-300 hover:bg-green-800 active:bg-green-900"
+            to={"/create-listing"}
           >
+            Create Listing
+          </Link>
+        </form>
+  
+        {/* Delete & Sign Out */}
+        <div className="flex justify-between mt-4 text-sm">
+          <span onClick={handleDeleteUser} className="text-red-700 font-semibold cursor-pointer hover:underline">
             Delete Account
           </span>
-          <span
-            onClick={handleSignOut}
-            className="text-slate-800 font-semibold cursor-pointer hover:underline"
-          >
+          <span onClick={handleSignOut} className="text-slate-800 font-semibold cursor-pointer hover:underline">
             Sign Out
           </span>
         </div>
-        <p className="text-red-700 font-semibold mt-5">{error ? error : ""}</p>
-        <p className="text-green-700 font-semibold mt-5">
-          {updateSuccess ? "User is Updates Successfully !" : ""}
+  
+        {/* Messages */}
+        <p className="text-red-700 font-semibold mt-3 text-sm">{error ? error : ""}</p>
+        <p className="text-green-700 font-semibold mt-3 text-sm">
+          {updateSuccess ? "User Updated Successfully!" : ""}
         </p>
       </div>
     </div>
   );
+  
+
+//   return (
+//     <div className="min-h-screen flex items-center justify-center px-4 sm:px-0 bg-[rgb(241, 245, 241)] text-center">
+//       <div className="w-full max-w-[400px] sm:max-w-[400px] p-8 sm:p-10 bg-slate-200 rounded-[25px] border-[3px] border-slate-300">
+//         <h1 className="text-[24px] sm:text-[28px] font-semibold text-slate-700 mb-6">
+//           Profile
+//         </h1>
+//         <form onSubmit={handleSubmmit} className="flex flex-col gap-4">
+//           {/* ✅ Hidden File Input */}
+//           <input
+//             type="file"
+//             ref={fileRef}
+//             hidden
+//             accept="image/*"
+//             onChange={handleFileChange} // ✅ Corrected event handler
+//           />
+
+//           {/* ✅ Clickable Profile Image */}
+//           <img
+//             // onClick={() => fileRef.current.click()}
+//             src={formData.avatar || selectedImage}
+//             // src={formData.avatar || selectedImage}
+//             alt="profile"
+//             className="rounded-full h-24 w-24 object-cover cursor-pointer self-center border border-gray-300 shadow-md"
+//           />
+
+//           {/* ✅ Uploading Progress Text */}
+//           {uploadProgress > 0 && uploadProgress < 100 && (
+//             <p className="text-black text-sm mt-1">
+//               Uploading: {uploadProgress}%
+//             </p>
+//           )}
+
+//           {/* ✅ Show error message if image is not uploaded */}
+//           {imageError && <p className="text-red-600 text-sm">{imageError}</p>}
+
+//           {/* ✅ Show success message when upload completes */}
+//           {uploadSuccess && (
+//             <p className="text-green-600 text-sm mt-1">
+//               Image uploaded successfully!
+//             </p>
+//           )}
+
+//           {/* Input Fields */}
+//           <input
+//             type="text"
+//             defaultValue={currentUser.username}
+//             placeholder="Username"
+//             id="username"
+//             className="w-full px-5 py-3 text-base sm:text-lg bg-slate-200 text-slate-700 rounded-full shadow-[inset_1px_1px_3px_#a0a0a0,inset_-2px_-2px_5px_#ffffff] border-none focus:outline-none focus:ring-2 focus:ring-slate-500"
+//             onChange={handleChange}
+//           />
+//           <input
+//             type="email"
+//             defaultValue={currentUser.email}
+//             placeholder="Email"
+//             id="email"
+//             className="w-full px-5 py-3 text-base sm:text-lg bg-slate-200 text-slate-700 rounded-full shadow-[inset_1px_1px_3px_#a0a0a0,inset_-2px_-2px_5px_#ffffff] border-none focus:outline-none focus:ring-2 focus:ring-slate-500"
+//             onChange={handleChange}
+//           />
+//           <input
+//             type="password"
+//             placeholder="Password"
+//             id="password"
+//             className="w-full px-5 py-3 text-base sm:text-lg bg-slate-200 text-slate-700 rounded-full shadow-[inset_1px_1px_3px_#a0a0a0,inset_-2px_-2px_5px_#ffffff] border-none focus:outline-none focus:ring-2 focus:ring-slate-500"
+//             onChange={handleChange}
+//           />
+
+//           {/* ✅ Update Button */}
+//           <button
+//             disabled={loading}
+//             className="w-full py-3 mt-4 text-lg sm:text-xl font-semibold text-white bg-slate-700 rounded-full shadow-[1px_1px_3px_#1e293b,2px_2px_5px_#334155] transition duration-300 hover:bg-slate-800 hover:shadow-[1px_1px_3px_#334155,-1px_-1px_3px_#1e293b] active:bg-slate-900 active:shadow-[inset_1px_1px_4px_#475569,inset_-2px_-2px_4px_#CBD5E1]"
+//           >
+//             {loading ? "loading.." : "update"}
+//           </button>
+//           <Link className="w-full py-3 mt-4 text-lg sm:text-xl font-semibold text-white bg-green-700 rounded-full shadow-[1px_1px_3px_#166534,2px_2px_5px_#14532d] transition duration-300 hover:bg-green-800 hover:shadow-[1px_1px_3px_#14532d,-1px_-1px_3px_#166534] active:bg-green-900 active:shadow-[inset_1px_1px_4px_#1e3a2a,inset_-2px_-2px_4px_#bbf7d0]
+// " to={"/create-listing"}>
+//           Create Listing</Link>
+//         </form>
+
+//         {/* Delete & Sign Out */}
+//         <div className="flex justify-between mt-5">
+//           <span
+//             onClick={handleDeleteUser}
+//             className="text-red-700 font-semibold cursor-pointer hover:underline"
+//           >
+//             Delete Account
+//           </span>
+//           <span
+//             onClick={handleSignOut}
+//             className="text-slate-800 font-semibold cursor-pointer hover:underline"
+//           >
+//             Sign Out
+//           </span>
+//         </div>
+//         <p className="text-red-700 font-semibold mt-5">{error ? error : ""}</p>
+//         <p className="text-green-700 font-semibold mt-5">
+//           {updateSuccess ? "User is Updates Successfully !" : ""}
+//         </p>
+//       </div>
+//     </div>
+//   );
 }
