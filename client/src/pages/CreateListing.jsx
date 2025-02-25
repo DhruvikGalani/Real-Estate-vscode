@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 
 export default function CreateListing() {
@@ -6,6 +5,8 @@ export default function CreateListing() {
   const [formData, setFormData] = useState({
     imageUrls: [],
   });
+  const [fileLabel, setFileLabel] = useState("Choose Files");
+
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -28,7 +29,7 @@ export default function CreateListing() {
       let completedUploads = 0;
       const totalFiles = files.length;
 
-      const promises = Array.from(files).map(async (file) => {
+      const promises = files.map(async (file) => {
         const url = await uploadToImgBB(file);
         if (url) {
           completedUploads++;
@@ -39,20 +40,68 @@ export default function CreateListing() {
       });
 
       const urls = (await Promise.all(promises)).filter((url) => url !== null);
-      setFormData({
+
+      setFormData((prevState) => ({
+        ...prevState,
         imageUrls: urls,
-      });
+      }));
 
       setFiles([]);
       setIsUploading(false);
     }
   };
-
   const removeImage = (index) => {
-    setFormData((prevState) => ({
-      imageUrls: prevState.imageUrls.filter((_, i) => i !== index),
-    }));
+    setFormData((prevState) => {
+      const updatedImageUrls = prevState.imageUrls.filter((_, i) => i !== index);
+      return { ...prevState, imageUrls: updatedImageUrls };
+    });
+  
+    setFiles((prevFiles) => {
+      const updatedFiles = prevFiles.filter((_, i) => i !== index);
+  
+      // Update file label after removal
+      if (updatedFiles.length > 0) {
+        setFileLabel(`${updatedFiles.length} file(s) selected`);
+      } else {
+        setFileLabel("Choose Files");
+      }
+  
+      return updatedFiles;
+    });
+  
+    // Ensure upload button is re-enabled when images are removed
+    setIsUploadDisabled((prevFiles.length - 1) >= 6);
   };
+  
+const handleImagePreview = (e) => {
+  const selectedFiles = Array.from(e.target.files);
+
+  if (selectedFiles.length > 6) {
+    setErrorMessage("You can upload a maximum of 6 images.");
+    return;
+  }
+
+  setErrorMessage("");
+
+  // Update the label with selected file count
+  if (selectedFiles.length > 0) {
+    setFileLabel(`${selectedFiles.length} file(s) selected`);
+  } else {
+    setFileLabel("Choose Files");
+  }
+
+  const imagePreviews = selectedFiles.map((file) =>
+    URL.createObjectURL(file)
+  );
+
+  setFormData((prevState) => ({
+    ...prevState,
+    imageUrls: imagePreviews,
+  }));
+
+  setFiles(selectedFiles);
+};
+
 
   const uploadToImgBB = async (file) => {
     const API_KEY = "6612afba75c17c547e1cf1bd2d1caad4";
@@ -176,8 +225,8 @@ export default function CreateListing() {
               </div>
             </div>
           </div>
-
         </div>
+
         <div className="flex flex-col flex-1 space-y-4">
           <p className="font-semibold">
             Images:
@@ -186,17 +235,20 @@ export default function CreateListing() {
             </span>
           </p>
           <div className="flex gap-4">
-            <input
-              onChange={(e) => {
-                setFiles(e.target.files);
-                setIsUploadDisabled(false);
-              }}
-              className="p-3 border border-gray-300 rounded w-full"
-              type="file"
-              id="images"
-              accept="image/*"
-              multiple
-            />
+          <div className="flex gap-4 items-center">
+  <label htmlFor="images" className="p-3 border border-gray-300 rounded w-full text-center cursor-pointer bg-gray-100">
+    {fileLabel}
+  </label>
+  <input
+    type="file"
+    id="images"
+    onChange={handleImagePreview}
+    className="hidden"
+    accept="image/*"
+    multiple
+  />
+</div>
+
             <button
               type="button"
               onClick={handleImage}
@@ -211,9 +263,10 @@ disabled:opacity-80 disabled:cursor-not-allowed"
           </div>
 
           {errorMessage && (
-            <div className="text-red-600 text-xs text-center">{errorMessage}</div>
+            <div className="text-red-600 text-xs text-center">
+              {errorMessage}
+            </div>
           )}
-
           {isUploading && (
             <div className="bg-transparent text-xs leading-none py-1 text-center text-green-700">
               Uploading {uploadProgress.toFixed(0)}% ...
@@ -230,13 +283,11 @@ disabled:opacity-80 disabled:cursor-not-allowed"
                   >
                     x
                   </button>
-                  <a href={image} target="_blank" rel="noopener noreferrer">
-                    <img
-                      src={image}
-                      alt={`Uploaded ${index + 1}`}
-                      className="w-20 h-20 object-cover rounded-lg border"
-                    />
-                  </a>
+                  <img
+                    src={image}
+                    alt={`Uploaded ${index + 1}`}
+                    className="w-20 h-20 object-cover rounded-lg border"
+                  />
                 </div>
               ))}
             </div>
