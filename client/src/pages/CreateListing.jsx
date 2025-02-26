@@ -4,6 +4,17 @@ export default function CreateListing() {
   const [files, setFiles] = useState([]);
   const [formData, setFormData] = useState({
     imageUrls: [],
+    name: '', //villa
+    description: '', //beautifull views
+    address: '', //varachha
+    type: "rent",
+    bedrooms: 1,
+    bathrooms: 1,
+    regularPrice: 50,
+    discountPrice: 50,
+    offer: false, //true
+    parking: false, //true
+    furnished: false, //true
   });
   const [fileLabel, setFileLabel] = useState("Choose Files");
 
@@ -13,6 +24,7 @@ export default function CreateListing() {
   const [isUploadDisabled, setIsUploadDisabled] = useState(false);
 
   console.log("Uploaded Image URLs:", formData.imageUrls);
+  console.log("Data : ", formData);
 
   const handleImage = async () => {
     if (files.length > 6) {
@@ -52,56 +64,57 @@ export default function CreateListing() {
   };
   const removeImage = (index) => {
     setFormData((prevState) => {
-      const updatedImageUrls = prevState.imageUrls.filter((_, i) => i !== index);
+      const updatedImageUrls = prevState.imageUrls.filter(
+        (_, i) => i !== index
+      );
       return { ...prevState, imageUrls: updatedImageUrls };
     });
-  
+
     setFiles((prevFiles) => {
       const updatedFiles = prevFiles.filter((_, i) => i !== index);
-  
+
       // Update file label after removal
       if (updatedFiles.length > 0) {
         setFileLabel(`${updatedFiles.length} file(s) selected`);
       } else {
         setFileLabel("Choose Files");
       }
-  
+
       return updatedFiles;
     });
-  
+
     // Ensure upload button is re-enabled when images are removed
-    setIsUploadDisabled((prevFiles.length - 1) >= 6);
+    setIsUploadDisabled(prevFiles.length - 1 >= 6);
   };
-  
-const handleImagePreview = (e) => {
-  const selectedFiles = Array.from(e.target.files);
 
-  if (selectedFiles.length > 6) {
-    setErrorMessage("You can upload a maximum of 6 images.");
-    return;
-  }
+  const handleImagePreview = (e) => {
+    const selectedFiles = Array.from(e.target.files);
 
-  setErrorMessage("");
+    if (selectedFiles.length > 6) {
+      setErrorMessage("You can upload a maximum of 6 images.");
+      return;
+    }
 
-  // Update the label with selected file count
-  if (selectedFiles.length > 0) {
-    setFileLabel(`${selectedFiles.length} file(s) selected`);
-  } else {
-    setFileLabel("Choose Files");
-  }
+    setErrorMessage("");
 
-  const imagePreviews = selectedFiles.map((file) =>
-    URL.createObjectURL(file)
-  );
+    // Update the label with selected file count
+    if (selectedFiles.length > 0) {
+      setFileLabel(`${selectedFiles.length} file selected`);
+    } else {
+      setFileLabel("Choose Files");
+    }
 
-  setFormData((prevState) => ({
-    ...prevState,
-    imageUrls: imagePreviews,
-  }));
+    const imagePreviews = selectedFiles.map((file) =>
+      URL.createObjectURL(file)
+    );
 
-  setFiles(selectedFiles);
-};
+    setFormData((prevState) => ({
+      ...prevState,
+      imageUrls: imagePreviews,
+    }));
 
+    setFiles(selectedFiles);
+  };
 
   const uploadToImgBB = async (file) => {
     const API_KEY = "6612afba75c17c547e1cf1bd2d1caad4";
@@ -121,6 +134,31 @@ const handleImagePreview = (e) => {
     }
   };
 
+  const handleChange = (e) => {
+    if (e.target.id === "sale" || e.target.id === "rent") {
+      setFormData({
+        ...formData,
+        type: e.target.id,
+      });
+    }
+    if (
+      e.target.id === "parking" ||
+      e.target.id === "furnished" ||
+      e.target.id === "offer"
+    ) {
+      setFormData({
+        ...formData,
+        [e.target.id]: e.target.checked,
+      });
+    }
+    if(e.target.type==='number'||e.target.type==='text'||e.target.type==='textarea'){
+      setFormData({
+        ...formData,
+        [e.target.id] : e.target.value
+      })
+    }
+  };
+
   return (
     <main className="p-3 max-w-4xl mx-auto pt-[100px]">
       <h1 className="text-3xl font-semibold text-center my-7">
@@ -129,6 +167,8 @@ const handleImagePreview = (e) => {
       <form className="flex flex-wrap gap-4 justify-between">
         <div className="flex flex-col gap-4  w-full sm:w-1/2">
           <input
+            onChange={handleChange}
+            value={formData.name}
             type="text"
             placeholder="Name"
             className="border p-3 rounded-lg w-full"
@@ -139,12 +179,16 @@ const handleImagePreview = (e) => {
           />
           <input
             type="text"
+            onChange={handleChange}
+            value={formData.description}
             placeholder="Description"
             className="border p-3 rounded-lg w-full"
             id="description"
             required
           />
           <input
+            onChange={handleChange}
+            value={formData.address}
             type="text"
             placeholder="Address"
             className="border p-3 rounded-lg w-full"
@@ -155,23 +199,53 @@ const handleImagePreview = (e) => {
 
           <div className="flex flex-wrap gap-4 justify-center">
             <div className="flex gap-2">
-              <input type="checkbox" id="sale" className="w-4" />
+              <input
+                type="checkbox"
+                id="sale"
+                className="w-4"
+                onChange={handleChange}
+                checked={formData.type === "sale"}
+              />
               <span>Sale</span>
             </div>
             <div className="flex gap-2">
-              <input type="checkbox" id="rent" className="w-4" />
+              <input
+                type="checkbox"
+                id="rent"
+                className="w-4"
+                onChange={handleChange}
+                checked={formData.type === "rent"}
+              />
               <span>Rent</span>
             </div>
             <div className="flex gap-2">
-              <input type="checkbox" id="parking" className="w-4" />
+              <input
+                type="checkbox"
+                id="parking"
+                className="w-4"
+                onChange={handleChange}
+                checked={formData.parking}
+              />
               <span>Parking</span>
             </div>
             <div className="flex gap-2">
-              <input type="checkbox" id="furnished" className="w-4" />
+              <input
+                type="checkbox"
+                id="furnished"
+                className="w-4"
+                onChange={handleChange}
+                checked={formData.furnished}
+              />
               <span>Furnished</span>
             </div>
             <div className="flex gap-2">
-              <input type="checkbox" id="offer" className="w-4" />
+              <input
+                type="checkbox"
+                id="offer"
+                className="w-4"
+                onChange={handleChange}
+                checked={formData.offer}
+              />
               <span>Offer</span>
             </div>
           </div>
@@ -184,6 +258,8 @@ const handleImagePreview = (e) => {
                 max={10}
                 required
                 className="p-3 border border-gray-300 rounded-lg w-24"
+                onChange={handleChange}
+                value={formData.bedrooms}
               />
               <p>Beds</p>
             </div>
@@ -194,6 +270,8 @@ const handleImagePreview = (e) => {
                 min={1}
                 max={10}
                 required
+                onChange={handleChange}
+                value={formData.bathrooms}
                 className="p-3 border border-gray-300 rounded-lg w-24"
               />
               <p>Baths</p>
@@ -202,8 +280,11 @@ const handleImagePreview = (e) => {
               <input
                 type="number"
                 id="regularPrice"
-                min={1}
+                min="50"
+                max="1000000"
                 required
+                onChange={handleChange}
+                value={formData.regularPrice}
                 className="p-3 border border-gray-300 rounded-lg w-24"
               />
               <div className="flex flex-col items-center">
@@ -215,8 +296,10 @@ const handleImagePreview = (e) => {
               <input
                 type="number"
                 id="discountPrice"
-                min={1}
+                min="50"
                 required
+                onChange={handleChange}
+                value={formData.discountPrice}
                 className="p-3 border border-gray-300 rounded-lg w-24"
               />
               <div className="flex flex-col items-center">
@@ -235,19 +318,22 @@ const handleImagePreview = (e) => {
             </span>
           </p>
           <div className="flex gap-4">
-          <div className="flex gap-4 items-center">
-  <label htmlFor="images" className="p-3 border border-gray-300 rounded w-full text-center cursor-pointer bg-gray-100">
-    {fileLabel}
-  </label>
-  <input
-    type="file"
-    id="images"
-    onChange={handleImagePreview}
-    className="hidden"
-    accept="image/*"
-    multiple
-  />
-</div>
+            <div className="flex gap-4 items-center">
+              <label
+                htmlFor="images"
+                className="p-3 border border-gray-300 rounded w-full text-center cursor-pointer bg-gray-100"
+              >
+                {fileLabel}
+              </label>
+              <input
+                type="file"
+                id="images"
+                onChange={handleImagePreview}
+                className="hidden"
+                accept="image/*"
+                multiple
+              />
+            </div>
 
             <button
               type="button"
@@ -301,3 +387,4 @@ disabled:opacity-80 disabled:cursor-not-allowed"
     </main>
   );
 }
+  
