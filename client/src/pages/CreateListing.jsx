@@ -1,12 +1,14 @@
 import React, { useState } from "react";
+import { useSelector } from "react-redux";
 
 export default function CreateListing() {
+  const { currentUser } = useSelector((state) => state.user);
   const [files, setFiles] = useState([]);
   const [formData, setFormData] = useState({
     imageUrls: [],
-    name: '', //villa
-    description: '', //beautifull views
-    address: '', //varachha
+    name: "", //villa
+    description: "", //beautifull views
+    address: "", //varachha
     type: "rent",
     bedrooms: 1,
     bathrooms: 1,
@@ -22,6 +24,13 @@ export default function CreateListing() {
   const [isUploading, setIsUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isUploadDisabled, setIsUploadDisabled] = useState(false);
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    message: "Can be add Listing",
+    show: false,
+    type: "",
+  });
 
   console.log("Uploaded Image URLs:", formData.imageUrls);
   console.log("Data : ", formData);
@@ -62,7 +71,12 @@ export default function CreateListing() {
       setIsUploading(false);
     }
   };
-  const removeImage = (index) => {
+  const removeImage = (index, event) => {
+    if (event) {
+      event.preventDefault(); // ✅ Stops accidental form submission
+      event.stopPropagation(); // ✅ Prevents bubbling up to parent elements
+    }
+
     setFormData((prevState) => {
       const updatedImageUrls = prevState.imageUrls.filter(
         (_, i) => i !== index
@@ -73,21 +87,23 @@ export default function CreateListing() {
     setFiles((prevFiles) => {
       const updatedFiles = prevFiles.filter((_, i) => i !== index);
 
-      // Update file label after removal
-      if (updatedFiles.length > 0) {
-        setFileLabel(`${updatedFiles.length} file(s) selected`);
-      } else {
-        setFileLabel("Choose Files");
-      }
+      // ✅ Update file label correctly
+      setFileLabel(
+        updatedFiles.length > 0
+          ? `${updatedFiles.length} file(s) selected`
+          : "Choose Files"
+      );
 
       return updatedFiles;
     });
 
-    // Ensure upload button is re-enabled when images are removed
-    setIsUploadDisabled(prevFiles.length - 1 >= 6);
+    // ✅ Re-enable upload button if images are removed
+    setIsUploadDisabled(false);
   };
 
   const handleImagePreview = (e) => {
+    e.preventDefault(); // Prevent form submission
+
     const selectedFiles = Array.from(e.target.files);
 
     if (selectedFiles.length > 6) {
@@ -98,22 +114,24 @@ export default function CreateListing() {
     setErrorMessage("");
 
     // Update the label with selected file count
-    if (selectedFiles.length > 0) {
-      setFileLabel(`${selectedFiles.length} file selected`);
-    } else {
-      setFileLabel("Choose Files");
-    }
+    setFileLabel(
+      selectedFiles.length > 0
+        ? `${selectedFiles.length} file(s) selected`
+        : "Choose Files"
+    );
 
+    // 🔹 Generate preview URLs and **replace** existing images
     const imagePreviews = selectedFiles.map((file) =>
       URL.createObjectURL(file)
     );
 
+    // 🔹 Replace images instead of appending
     setFormData((prevState) => ({
       ...prevState,
-      imageUrls: imagePreviews,
+      imageUrls: imagePreviews, // Replace the entire array
     }));
 
-    setFiles(selectedFiles);
+    setFiles(selectedFiles); // Replace the file state
   };
 
   const uploadToImgBB = async (file) => {
@@ -135,27 +153,97 @@ export default function CreateListing() {
   };
 
   const handleChange = (e) => {
-    if (e.target.id === "sale" || e.target.id === "rent") {
-      setFormData({
-        ...formData,
-        type: e.target.id,
-      });
+    const { id, value, type } = e.target;
+
+    if (id === "sale" || id === "rent") {
+      setFormData((prevState) => ({
+        ...prevState,
+        type: id,
+      }));
+    } else if (id === "parking" || id === "furnished" || id === "offer") {
+      setFormData((prevState) => ({
+        ...prevState,
+        [id]: e.target.checked,
+      }));
+    } else if (type === "number") {
+      // 🔹 Convert number inputs to actual numbers
+      setFormData((prevState) => ({
+        ...prevState,
+        [id]: Number(value), // Converts string to number
+      }));
+    } else {
+      setFormData((prevState) => ({
+        ...prevState,
+        [id]: value,
+      }));
     }
-    if (
-      e.target.id === "parking" ||
-      e.target.id === "furnished" ||
-      e.target.id === "offer"
-    ) {
-      setFormData({
-        ...formData,
-        [e.target.id]: e.target.checked,
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      setError(false);
+
+      const res = await fetch("/api/listing/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formData,
+          userRef: currentUser._id,
+        }),
       });
-    }
-    if(e.target.type==='number'||e.target.type==='text'||e.target.type==='textarea'){
-      setFormData({
-        ...formData,
-        [e.target.id] : e.target.value
-      })
+
+      const data = await res.json();
+      setLoading(false);
+
+      if (data.success === false) {
+        setError(data.message);
+        setSnackbar({ message: data.message, show: true, type: "error" }); //  Show error snackbar
+      } else {
+        setSnackbar({
+          message: "Listing created successfully",
+          show: true,
+          type: "success",
+        }); //  Show success snackbar
+
+        // Optionally, clear the form after success
+        setFormData({
+          imageUrls: [],
+          name: "",
+          description: "",
+          address: "",
+          type: "rent",
+          bedrooms: 1,
+          bathrooms: 1,
+          regularPrice: 50,
+          discountPrice: 50,
+          offer: false,
+          parking: false,
+          furnished: false,
+        });
+
+        setFiles([]);
+      }
+
+      // Hide snackbar automatically after 3 seconds
+      setTimeout(() => {
+        setSnackbar({ message: "", show: false, type: "" });
+      }, 3000);
+    } catch (error) {
+      setError(error.message);
+      setLoading(false);
+      setSnackbar({
+        message: "Failed to create listing. Please try again.",
+        show: true,
+        type: "error",
+      });
+
+      setTimeout(() => {
+        setSnackbar({ message: "", show: false, type: "" });
+      }, 3000);
     }
   };
 
@@ -164,7 +252,10 @@ export default function CreateListing() {
       <h1 className="text-3xl font-semibold text-center my-7">
         Create a Listing
       </h1>
-      <form className="flex flex-wrap gap-4 justify-between">
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-wrap gap-4 justify-between"
+      >
         <div className="flex flex-col gap-4  w-full sm:w-1/2">
           <input
             onChange={handleChange}
@@ -336,8 +427,8 @@ export default function CreateListing() {
             </div>
 
             <button
-              type="button"
-              onClick={handleImage}
+              type="button" // Prevents form submission
+              onClick={(e) => handleImage(e)}
               className="p-3 text-green-700 border border-green-700 rounded-xl uppercase 
 hover:shadow-xl hover:text-white hover:bg-green-800 
 transition-all duration-300 ease-in-out 
@@ -364,11 +455,13 @@ disabled:opacity-80 disabled:cursor-not-allowed"
               {formData.imageUrls.map((image, index) => (
                 <div key={index} className="relative">
                   <button
-                    onClick={() => removeImage(index)}
+                    type="button" // ✅ Ensures it's not a submit button
+                    onClick={(event) => removeImage(index, event)}
                     className="absolute top-1 right-1 bg-red-600 text-white p-1 pb-[8px] rounded-full leading-[8px]"
                   >
                     x
                   </button>
+
                   <img
                     src={image}
                     alt={`Uploaded ${index + 1}`}
@@ -380,11 +473,20 @@ disabled:opacity-80 disabled:cursor-not-allowed"
           )}
 
           <button className="w-full py-2.5 mt-3 text-sm sm:text-base font-semibold text-white bg-slate-700 rounded-xl shadow-md transition duration-300 hover:bg-slate-800 active:bg-slate-900">
-            Create Listing
+            {loading ? "Createing..." : "Create Listing"}
           </button>
+          {error && <p className="text-red-700 text-sm">{error}</p>}
         </div>
       </form>
+      {snackbar.show && (
+        <div
+          className={`fixed bottom-5 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg text-slate-900 font-semibold shadow-inner  transition-opacity duration-300 
+    ${snackbar.type === "success" ? "bg-slate-300" : "bg-red-300"} 
+    backdrop-blur-md border border-white/20 w-[90%] md:w-auto max-w-sm text-center text-sm md:text-base`}
+        >
+          {snackbar.message}
+        </div>
+      )}
     </main>
   );
 }
-  
