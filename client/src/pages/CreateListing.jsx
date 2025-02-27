@@ -1,8 +1,10 @@
-import React, { useState,useRef  } from "react";
+import React, { useState, useRef } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 export default function CreateListing() {
   const { currentUser } = useSelector((state) => state.user);
+  const navigate = useNavigate();
   const [files, setFiles] = useState([]);
   const fileInputRef = useRef(null);
 
@@ -183,7 +185,7 @@ export default function CreateListing() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (files.length > 0) {
       setError("You must upload selected images first.");
       setSnackbar({
@@ -191,13 +193,13 @@ export default function CreateListing() {
         show: true,
         type: "error",
       });
-  
+
       setTimeout(() => {
         setSnackbar({ message: "", show: false, type: "" });
       }, 3000);
       return;
     }
-  
+
     if (formData.imageUrls.length < 1) {
       setError("You must upload at least one image.");
       setSnackbar({
@@ -205,22 +207,22 @@ export default function CreateListing() {
         show: true,
         type: "error",
       });
-  
+
       setTimeout(() => {
         setSnackbar({ message: "", show: false, type: "" });
       }, 3000);
       return;
     }
-  
+
     if (formData.regularPrice <= formData.discountPrice) {
       setError("Discount Price must be lower than Regular Price");
       return;
     }
-  
+
     try {
       setLoading(true);
       setError(false);
-  
+
       const res = await fetch("/api/listing/create", {
         method: "POST",
         headers: {
@@ -231,10 +233,10 @@ export default function CreateListing() {
           userRef: currentUser._id,
         }),
       });
-  
+
       const data = await res.json();
       setLoading(false);
-  
+
       if (data.success === false) {
         setError(data.message);
         setSnackbar({ message: data.message, show: true, type: "error" });
@@ -244,7 +246,7 @@ export default function CreateListing() {
           show: true,
           type: "success",
         });
-  
+
         // ✅ Clear form after success
         setFormData({
           imageUrls: [],
@@ -260,22 +262,23 @@ export default function CreateListing() {
           parking: false,
           furnished: false,
         });
-  
+
         // ✅ Clear selected files
-        setFiles([]); 
-  
+        setFiles([]);
+
         // ✅ Reset file input field
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
         }
-  
+
         // ✅ Reset file label
         setFileLabel("Choose Files");
       }
-  
+
       setTimeout(() => {
         setSnackbar({ message: "", show: false, type: "" });
       }, 3000);
+      navigate(`/listing/${data._id}`)
     } catch (error) {
       setError(error.message);
       setLoading(false);
@@ -284,13 +287,12 @@ export default function CreateListing() {
         show: true,
         type: "error",
       });
-  
+
       setTimeout(() => {
         setSnackbar({ message: "", show: false, type: "" });
       }, 3000);
     }
   };
-  
 
   return (
     <main className="p-3 max-w-4xl mx-auto pt-[100px]">
@@ -429,23 +431,23 @@ export default function CreateListing() {
                 <span className="text-xs">($ / month)</span>
               </div>
             </div>
-           {formData.offer && (
-             <div className="flex items-center gap-2">
-             <input
-               type="number"
-               id="discountPrice"
-               min="0"
-               required
-               onChange={handleChange}
-               value={formData.discountPrice}
-               className="p-3 border border-gray-300 rounded-lg w-24"
-             />
-             <div className="flex flex-col items-center">
-               <p>Discount Price</p>
-               <span className="text-xs">($ / month)</span>
-             </div>
-           </div>
-           )}
+            {formData.offer && (
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  id="discountPrice"
+                  min="0"
+                  required
+                  onChange={handleChange}
+                  value={formData.discountPrice}
+                  className="p-3 border border-gray-300 rounded-lg w-24"
+                />
+                <div className="flex flex-col items-center">
+                  <p>Discount Price</p>
+                  <span className="text-xs">($ / month)</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -521,7 +523,7 @@ disabled:opacity-80 disabled:cursor-not-allowed"
             </div>
           )}
 
-          <button className="w-full py-2.5 mt-3 text-sm sm:text-base font-semibold text-white bg-slate-700 rounded-xl shadow-md transition duration-300 hover:bg-slate-800 active:bg-slate-900">
+          <button disabled={loading || isUploading } className="w-full py-2.5 mt-3 text-sm sm:text-base font-semibold text-white bg-slate-700 rounded-xl shadow-md transition duration-300 hover:bg-slate-800 active:bg-slate-900">
             {loading ? "Createing..." : "Create Listing"}
           </button>
           {error && <p className="text-red-700 text-sm">{error}</p>}
