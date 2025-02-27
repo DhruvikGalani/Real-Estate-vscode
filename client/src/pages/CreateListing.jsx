@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useState,useRef  } from "react";
 import { useSelector } from "react-redux";
 
 export default function CreateListing() {
   const { currentUser } = useSelector((state) => state.user);
   const [files, setFiles] = useState([]);
+  const fileInputRef = useRef(null);
+
   const [formData, setFormData] = useState({
     imageUrls: [],
     name: "", //villa
@@ -13,7 +15,7 @@ export default function CreateListing() {
     bedrooms: 1,
     bathrooms: 1,
     regularPrice: 50,
-    discountPrice: 50,
+    discountPrice: 0,
     offer: false, //true
     parking: false, //true
     furnished: false, //true
@@ -181,10 +183,44 @@ export default function CreateListing() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
+    if (files.length > 0) {
+      setError("You must upload selected images first.");
+      setSnackbar({
+        message: "You must upload selected images first.",
+        show: true,
+        type: "error",
+      });
+  
+      setTimeout(() => {
+        setSnackbar({ message: "", show: false, type: "" });
+      }, 3000);
+      return;
+    }
+  
+    if (formData.imageUrls.length < 1) {
+      setError("You must upload at least one image.");
+      setSnackbar({
+        message: "You must upload at least one image.",
+        show: true,
+        type: "error",
+      });
+  
+      setTimeout(() => {
+        setSnackbar({ message: "", show: false, type: "" });
+      }, 3000);
+      return;
+    }
+  
+    if (formData.regularPrice <= formData.discountPrice) {
+      setError("Discount Price must be lower than Regular Price");
+      return;
+    }
+  
     try {
       setLoading(true);
       setError(false);
-
+  
       const res = await fetch("/api/listing/create", {
         method: "POST",
         headers: {
@@ -195,21 +231,21 @@ export default function CreateListing() {
           userRef: currentUser._id,
         }),
       });
-
+  
       const data = await res.json();
       setLoading(false);
-
+  
       if (data.success === false) {
         setError(data.message);
-        setSnackbar({ message: data.message, show: true, type: "error" }); //  Show error snackbar
+        setSnackbar({ message: data.message, show: true, type: "error" });
       } else {
         setSnackbar({
           message: "Listing created successfully",
           show: true,
           type: "success",
-        }); //  Show success snackbar
-
-        // Optionally, clear the form after success
+        });
+  
+        // ✅ Clear form after success
         setFormData({
           imageUrls: [],
           name: "",
@@ -219,16 +255,24 @@ export default function CreateListing() {
           bedrooms: 1,
           bathrooms: 1,
           regularPrice: 50,
-          discountPrice: 50,
+          discountPrice: 0,
           offer: false,
           parking: false,
           furnished: false,
         });
-
-        setFiles([]);
+  
+        // ✅ Clear selected files
+        setFiles([]); 
+  
+        // ✅ Reset file input field
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+  
+        // ✅ Reset file label
+        setFileLabel("Choose Files");
       }
-
-      // Hide snackbar automatically after 3 seconds
+  
       setTimeout(() => {
         setSnackbar({ message: "", show: false, type: "" });
       }, 3000);
@@ -240,12 +284,13 @@ export default function CreateListing() {
         show: true,
         type: "error",
       });
-
+  
       setTimeout(() => {
         setSnackbar({ message: "", show: false, type: "" });
       }, 3000);
     }
   };
+  
 
   return (
     <main className="p-3 max-w-4xl mx-auto pt-[100px]">
@@ -270,6 +315,7 @@ export default function CreateListing() {
           />
           <input
             type="text"
+            minLength="10"
             onChange={handleChange}
             value={formData.description}
             placeholder="Description"
@@ -383,21 +429,23 @@ export default function CreateListing() {
                 <span className="text-xs">($ / month)</span>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="number"
-                id="discountPrice"
-                min="50"
-                required
-                onChange={handleChange}
-                value={formData.discountPrice}
-                className="p-3 border border-gray-300 rounded-lg w-24"
-              />
-              <div className="flex flex-col items-center">
-                <p>Discount Price</p>
-                <span className="text-xs">($ / month)</span>
-              </div>
-            </div>
+           {formData.offer && (
+             <div className="flex items-center gap-2">
+             <input
+               type="number"
+               id="discountPrice"
+               min="0"
+               required
+               onChange={handleChange}
+               value={formData.discountPrice}
+               className="p-3 border border-gray-300 rounded-lg w-24"
+             />
+             <div className="flex flex-col items-center">
+               <p>Discount Price</p>
+               <span className="text-xs">($ / month)</span>
+             </div>
+           </div>
+           )}
           </div>
         </div>
 
@@ -423,6 +471,7 @@ export default function CreateListing() {
                 className="hidden"
                 accept="image/*"
                 multiple
+                ref={fileInputRef}
               />
             </div>
 
