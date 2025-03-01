@@ -27,6 +27,7 @@ export default function Profile() {
   const [formData, setFormData] = useState({});
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const [ShowLisingError, setShowListingError] = useState(false);
+  const [showListings, setShowListings] = useState(false);
   const [userListings, setUserListings] = useState([]);
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -130,16 +131,34 @@ export default function Profile() {
     }
   };
 
+  // const handleShowListing = async () => {
+  //   try {
+  //     setShowListingError(false);
+  //     const res = await fetch(`/api/user/listings/${currentUser._id}`);
+  //     const data = await res.json();
+  //     if (data.success === false) {
+  //       setShowListingError(true);
+  //       return;
+  //     }
+  //     setUserListings(data);
+  //   } catch (error) {
+  //     setShowListingError(true);
+  //   }
+  // };
+
   const handleShowListing = async () => {
     try {
-      setShowListingError(false);
-      const res = await fetch(`/api/user/listings/${currentUser._id}`);
-      const data = await res.json();
-      if (data.success === false) {
-        setShowListingError(true);
-        return;
+      if (!showListings) {
+        setShowListingError(false);
+        const res = await fetch(`/api/user/listings/${currentUser._id}`);
+        const data = await res.json();
+        if (data.success === false) {
+          setShowListingError(true);
+          return;
+        }
+        setUserListings(data);
       }
-      setUserListings(data);
+      setShowListings((prev) => !prev); // ✅ Toggle only after fetching is done
     } catch (error) {
       setShowListingError(true);
     }
@@ -147,7 +166,6 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-0 bg-[rgb(241,245,241)] text-center pt-[120px]">
-
       <div className="w-full max-w-[320px] sm:max-w-[350px] p-6 sm:p-8 bg-slate-200 rounded-[20px] border-[2px] border-slate-300 mb-6">
         <h1 className="text-[20px] sm:text-[24px] font-semibold text-slate-700 mb-4">
           Profile
@@ -240,81 +258,85 @@ export default function Profile() {
           onClick={handleShowListing}
           className="text-green-700 mt-4 w-full "
         >
-          show Listing
+          {showListings ? "Hide Listings" : "Show Listings"}
         </button>
         <p className="text-red-700 mt-1 ">
           {ShowLisingError ? "Error for Showing Listing" : ""}
         </p>
       </div>
       {/* listing design */}
-     <div className="flex flex-col gap-4">
-      <h1 className="text-center text-2xl font-semibold">Your Listing</h1>
-     {userListings &&
-        userListings.length > 0 &&
-        userListings.map((listing) => (
-          <div key={listing._id} className="border rounded-lg p-3 w-[350px] m-1 flex justify-between items-center gap-4">
-            <Link to={`/listings/${listing._id}`}>
-              <img src={listing.imageUrls[0]} alt="listing cover" className="h-16 w-16 object-contain" />
-            </Link>
-            <Link className="text-slate-700 flex-1 font-semibold  hover:underline truncate " to={`/listings/${listing._id}`}>
-            <p >
-              {listing.name}
-            </p>
-            </Link>
-            <div className="flex-col flex items-center">
-              <button className="text-red-700 uppercase">Delete</button>
-              <button className="text-green-700 uppercase">Edit</button>
-            </div>
+        {/* Show Listings only when showListings is true */}
+        {showListings && (
+          <div className="flex flex-col gap-6 max-w-3xl mx-auto">
+            <h1 className="text-center text-3xl font-bold text-gray-800 mb-4">
+              Your Listings
+            </h1>
+            {userListings.length > 0 ? (
+              userListings.map((listing) => (
+                <div
+                  key={listing._id}
+                  className="bg-white shadow-md rounded-lg p-4 flex items-center gap-4 transition-transform duration-300 hover:scale-[1.02] hover:shadow-lg"
+                >
+                  {/* Listing Image */}
+                  <Link
+                    to={`/listings/${listing._id}`}
+                    className="flex-shrink-0"
+                  >
+                    <img
+                      src={
+                        listing.imageUrls?.[0] ||
+                        "https://via.placeholder.com/100"
+                      }
+                      alt="listing cover"
+                      className="h-20 w-20 object-cover rounded-md"
+                    />
+                  </Link>
+
+                  {/* Listing Details */}
+                  <div className="flex-1">
+                    <Link
+                      to={`/listings/${listing._id}`}
+                      className="text-lg font-semibold text-gray-800 hover:text-blue-600 transition"
+                    >
+                      {listing.name}
+                    </Link>
+                    <p className="text-sm text-gray-600">
+                       {listing.address}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                       {listing.bedrooms} BHK &nbsp; | &nbsp; 
+                      {listing.bathrooms} Bath
+                    </p>
+                    <p className="text-2xl font-semibold text-blue-800">
+                      ${" "}
+                      {listing.offer
+                        ? listing.discountPrice
+                        : listing.regularPrice}
+                      {listing.offer && (
+                        <span className="text-gray-500 line-through text-sm ml-2">
+                          ₹ {listing.regularPrice}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex flex-col gap-2">
+                    <button className="text-red-600 font-semibold hover:underline transition">
+                       Delete
+                    </button>
+                    <button className="text-green-600 font-semibold hover:underline transition">
+                       Edit
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-center text-gray-500">No listings available</p>
+            )}
           </div>
-        ))}
-     </div>
+        )}
+     
     </div>
   );
 }
-
-
-// {userListings && userListings.length > 0 ? (
-//   userListings.map((listing) => (
-//     <div key={listing._id} className="bg-white shadow-lg rounded-xl p-4">
-//       {/* Listing Image */}
-//       <Link to={`/listings/${listing._id}`}>
-//         <img
-//           src={listing.imageUrls?.[0] || "https://via.placeholder.com/300"}
-//           alt={listing.name}
-//           className="w-full h-56 object-cover rounded-lg"
-//         />
-//       </Link>
-
-//       {/* Listing Price & Name */}
-//       <div className="mt-4 px-2">
-//         <p className="text-blue-600 font-semibold text-lg">
-//           ₹ {listing.offer ? listing.discountPrice : listing.regularPrice}{" "}
-//           {listing.offer && (
-//             <span className="text-gray-500 line-through ml-2">
-//               ₹ {listing.regularPrice}
-//             </span>
-//           )}
-//         </p>
-//         <h2 className="text-xl font-bold text-gray-800">{listing.name}</h2>
-
-//         {/* Address */}
-//         <p className="text-gray-500 flex items-center mt-1">
-//           📍 {listing.address}
-//         </p>
-
-//         {/* Bedrooms & Bathrooms */}
-//         <p className="text-gray-700 mt-2 flex items-center">
-//           🛏 {listing.bedrooms} BHK &nbsp; | &nbsp; 🛁 {listing.bathrooms} Bath
-//         </p>
-
-//         {/* Furnished & Parking */}
-//         <div className="mt-2 flex items-center text-gray-600 text-sm">
-//           {listing.furnished && <span className="mr-2">🛋 Furnished</span>}
-//           {listing.parking && <span>🚗 Parking Available</span>}
-//         </div>
-//       </div>
-//     </div>
-//   ))
-// ) : (
-//   <p className="text-center text-gray-500">No listings available</p>
-// )}
