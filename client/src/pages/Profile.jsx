@@ -152,7 +152,7 @@ export default function Profile() {
   const handleListingDelete = async (listingId) => {
     try {
       const res = await fetch(`/api/listing/delete/${listingId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
       const data = await res.json();
       if (data.success === false) {
@@ -270,65 +270,81 @@ export default function Profile() {
       {/* listing design */}
       {/* Show Listings only when showListings is true */}
       {showListings && (
-        <div className="flex flex-col gap-6 max-w-3xl mx-auto">
+        <div className="flex flex-col max-w-3xl mx-auto">
           <h1 className="text-center text-3xl font-bold text-gray-800 mb-4">
             Your Listings
           </h1>
           {userListings.length > 0 ? (
             userListings.map((listing) => (
-              <div
-                key={listing._id}
-                className="bg-white shadow-md rounded-lg p-4 flex items-center gap-4 transition-transform duration-300 hover:scale-[1.02] hover:shadow-lg"
-              >
-                {/* Listing Image */}
-                <Link to={`/listings/${listing._id}`} className="flex-shrink-0">
-                  <img
-                    src={
-                      listing.imageUrls?.[0] ||
-                      "https://via.placeholder.com/100"
-                    }
-                    alt="listing cover"
-                    className="h-20 w-20 object-cover rounded-md"
-                  />
-                </Link>
+              <div key={listing._id} className="relative  mb-3">
+                {/* Rent or Sale Label */}
+                <p
+                  className={`absolute top-2 right-2 z-10 px-2 py-1 text-xs font-semibold rounded ${
+                    listing.type === "sale"
+                      ? "bg-red-100 text-red-600"
+                      : "bg-green-100 text-green-600"
+                  }`}
+                >
+                  {listing.type === "sale" ? "For Sale" : "For Rent"}
+                </p>
 
-                {/* Listing Details */}
-                <div className="flex-1">
+                {/* Listing Container */}
+                <div className="bg-white shadow-md rounded-lg p-4 flex items-center gap-4 transition-transform duration-300 hover:scale-[1.02] hover:shadow-lg">
+                  {/* Listing Image */}
                   <Link
                     to={`/listings/${listing._id}`}
-                    className="text-lg font-semibold text-gray-800 hover:text-blue-600 transition"
+                    className="flex-shrink-0"
                   >
-                    {listing.name}
+                    <img
+                      src={
+                        listing.imageUrls?.[0] ||
+                        "https://via.placeholder.com/100"
+                      }
+                      alt="listing cover"
+                      className="h-20 w-20 object-cover rounded-md"
+                    />
                   </Link>
-                  <p className="text-sm text-gray-600">{listing.address}</p>
-                  <p className="text-sm text-gray-500">
-                    {listing.bedrooms} BHK &nbsp; | &nbsp;
-                    {listing.bathrooms} Bath
-                  </p>
-                  <p className="text-2xl font-semibold text-blue-800">
-                    ${" "}
-                    {listing.offer
-                      ? listing.discountPrice
-                      : listing.regularPrice}
-                    {listing.offer && (
-                      <span className="text-gray-500 line-through text-sm ml-2">
-                        ₹ {listing.regularPrice}
-                      </span>
-                    )}
-                  </p>
-                </div>
 
-                {/* Action Buttons */}
-                <div className="flex flex-col gap-2">
-                  <button
-                    onClick={() => handleListingDelete(listing._id)}
-                    className="text-red-600 font-semibold hover:underline transition"
-                  >
-                    Delete
-                  </button>
-                  <button className="text-green-600 font-semibold hover:underline transition">
-                    Edit
-                  </button>
+                  {/* Listing Details */}
+                  <div className="flex-1">
+                    <Link
+                      to={`/listings/${listing._id}`}
+                      className="text-lg font-semibold text-gray-800 hover:text-blue-600 transition"
+                    >
+                      {listing.name}
+                    </Link>
+                    <p className="text-sm text-gray-600">{listing.address}</p>
+                    <p className="text-sm text-gray-500">
+                      {listing.bedrooms} BHK &nbsp; | &nbsp;
+                      {listing.bathrooms} Bath
+                    </p>
+                    <p className="text-2xl font-semibold text-blue-800">
+                      $
+                      {listing.offer
+                        ? listing.discountPrice
+                        : listing.regularPrice}
+                      {listing.offer && (
+                        <span className="text-gray-500 line-through text-sm ml-2">
+                          ₹ {listing.regularPrice}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex flex-col gap-2">
+                    <button
+                      onClick={() => handleListingDelete(listing._id)}
+                      className="text-red-600 font-semibold hover:underline transition"
+                    >
+                      Delete
+                    </button>
+                    <Link to={`/update-listing/${listing._id}`}>
+                      <button className="text-green-600 font-semibold hover:underline transition">
+                        Edit
+                      </button>
+                    </Link>
+                  </div>
                 </div>
               </div>
             ))
