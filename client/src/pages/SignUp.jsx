@@ -63,7 +63,7 @@ export default function SignUp() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 sm:px-0 bg-[rgb(241,245,241)] text-center pt-[100px]">
+    <div className="min-h-screen flex items-center justify-center px-4 sm:px-0 bg-[rgb(241,245,241)] text-center ">
       <div className="w-full max-w-[320px] sm:max-w-[350px] p-6 sm:p-8 bg-slate-200 rounded-[20px] border-[2px] border-slate-300">
         <h1 className="text-[20px] sm:text-[24px] font-semibold text-slate-700 mb-4">
           Join Our Community

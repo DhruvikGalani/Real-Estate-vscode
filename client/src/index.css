@@ -5,6 +5,7 @@
 body
 {
     background-color: rgb(241, 245, 241);
+    padding-top: 100px;
 }
 
 /* for error of headr click on sign in */

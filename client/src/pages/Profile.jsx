@@ -168,7 +168,7 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-0 bg-[rgb(241,245,241)] text-center pt-[120px]">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-0 bg-[rgb(241,245,241)] text-center">
       <div className="w-full max-w-[320px] sm:max-w-[350px] p-6 sm:p-8 bg-slate-200 rounded-[20px] border-[2px] border-slate-300 mb-6">
         <h1 className="text-[20px] sm:text-[24px] font-semibold text-slate-700 mb-4">
           Profile
@@ -292,7 +292,7 @@ export default function Profile() {
                 <div className="bg-white shadow-md rounded-lg p-4 flex items-center gap-4 transition-transform duration-300 hover:scale-[1.02] hover:shadow-lg">
                   {/* Listing Image */}
                   <Link
-                    to={`/listings/${listing._id}`}
+                    to={`/listing/${listing._id}`}
                     className="flex-shrink-0"
                   >
                     <img
@@ -308,7 +308,7 @@ export default function Profile() {
                   {/* Listing Details */}
                   <div className="flex-1">
                     <Link
-                      to={`/listings/${listing._id}`}
+                      to={`/listing/${listing._id}`}
                       className="text-lg font-semibold text-gray-800 hover:text-blue-600 transition"
                     >
                       {listing.name}
